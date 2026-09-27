@@ -69,7 +69,6 @@ class UIElement:
             parent: UIElement,
             **kwargs: typing.Unpack[UIElementKwargs]
     ) -> None:
-        print(kwargs, type)
         self._parent = parent
 
         # Continue by defining the types and more.
@@ -207,7 +206,6 @@ class UIElement:
         )
         render_at.x -= (self._surface.get_width() * self._pivot.x)
         render_at.y -= (self._surface.get_height() * self._pivot.y)
-        print(self._pivot)
         self._parent.get_surface().blit(self._surface, render_at)
         return self
 
