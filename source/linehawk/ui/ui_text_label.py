@@ -49,23 +49,33 @@ class UITextLabel(UIElement):
         )
 
         if maybe_font.is_present():
-            self._surface.fill(
+            # NOTE: Do we have the text?
+            maybe_text: typing.Optional[str] = (
                 using_theme
-                    .get(self._using_theme)
-                    .background_color
+                    .get_language_service()
+                    .format(self._text)
             )
-            font: pygame.font.Font = (
-                maybe_font.get().get_font()
-            )
-            font_render = font.render(
-                self._text,
-                False,
-                using_theme
-                    .get(self._using_theme)
-                    .foreground_color
-            )
-            self._surface.blit(font_render, (0, 0))
-            self._need_regeneration = False
+            if maybe_text:
+                self._surface.fill(
+                    using_theme
+                        .get(self._using_theme)
+                        .background_color
+                )
+                font: pygame.font.Font = (
+                    maybe_font.get().get_font()
+                )
+                font_render = font.render(
+                    maybe_text,
+                    False,
+                    using_theme
+                        .get(self._using_theme)
+                        .foreground_color
+                )
+                self._surface.blit(font_render, (0, 0))
+                self._need_regeneration = False
+            else:
+                # Wait for the text to be there.
+                self._need_regeneration = True
         else:
             # Wait for the content to be loaded.
             self._need_regeneration = True

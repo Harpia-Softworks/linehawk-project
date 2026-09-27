@@ -4,6 +4,8 @@ from linehawk.core.services.warehouse.warehouse_cache import *
 from linehawk.core.services.warehouse.warehouse_promise import *
 
 import typing
+import json
+import os
 
 class WarehouseServiceError(BaseException):
     message: str
@@ -47,6 +49,7 @@ class _WarehouseRequestStatus:
     since_tick: int
     def __init__(self, current_tick: int) -> None:
         self.since_tick = current_tick
+
 class WarehouseService(BaseService):
     """Contains loaded surfaces and more."""
 
@@ -127,6 +130,22 @@ class WarehouseService(BaseService):
                 )
             return WarehousePromise(False, key, None)
 
+    def get_json(
+            self,
+            key: str
+    ) -> WarehousePromise:
+        key_name: str = key + "@json"
+        if key_name in self.__cached:
+            return WarehousePromise(True, key, self.__cached[key_name])
+        else:
+            if not key_name in self.__busy:
+                # TODO: add timing for the _WarehouseRequestStatus!
+                self.__busy[key_name] = _WarehouseRequestStatus(0)
+                self.__requested.append(
+                    _WarehouseRequest(WarehouseCacheType.JSON, key)
+                )
+            return WarehousePromise(False, key, None)
+
     # Tick:
     def __process_font(self, site: str) -> WarehouseCache:
         # Expected Format:
@@ -156,6 +175,21 @@ class WarehouseService(BaseService):
         )
         return WarehouseCache(WarehouseCacheType.FONT, font)
 
+    def __process_json(self, site: str) -> WarehouseCache:
+        site_split: typing.List[str] = site.split(":")
+        if len(site_split) != 2: 
+            raise WarehouseServiceBadSiteError(site)
+        from_package: str = self.get_package(site_split[0])
+        direction: str = site_split[1]
+
+        # TODO: Do better here, we can stall more.
+        fp = open(from_package + direction, "rb")
+        parsed_data = json.load(fp)
+        fp.close()
+
+        # Return the cache, finally...
+        return WarehouseCache(WarehouseCacheType.JSON, parsed_data)
+
     def __process(self, request: _WarehouseRequest) -> None:
         cache: typing.Optional[WarehouseCache] = None
         match request.type:
@@ -163,10 +197,13 @@ class WarehouseService(BaseService):
                 return
             case WarehouseCacheType.FONT:
                 cache = self.__process_font(request.site)
+            case WarehouseCacheType.JSON:
+                cache = self.__process_json(request.site)
             case _:
                 pass
         # NOTE: Finish by adding it on the `cache`.
-        if cache: self.__cached[request.site + "@" + cache.get_tag()] = cache
+        if cache:
+            self.__cached[request.site + "@" + cache.get_tag()] = cache
 
     def __step_assembly_line(self) -> None:
         for _ in range(0, self.__quota):

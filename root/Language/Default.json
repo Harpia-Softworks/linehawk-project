@@ -1,0 +1,12 @@
+{
+    "info":
+    {
+        "author": "Harpia Softworks",
+        "year": 2026,
+        "name": "Default"
+    },
+    "data":
+    {
+        "lh.internal.ui_design.main::container.text-main": "Hello World!"
+    }
+}

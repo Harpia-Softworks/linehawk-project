@@ -1,0 +1,33 @@
+{
+    "theme": "root:Theme/Default.json",
+    "contains":
+    [
+        {
+            "name": "container",
+            "type": "frame",
+            "properties":
+            {
+                "size": [1, 0, 1, 0],
+                "position": [0, 0, 0, 0],
+                "anchor": [0, 0],
+                "use_style": "container"
+            },
+            "contains":
+            [
+                {
+                    "name": "text",
+                    "type": "text_label",
+                    "properties": 
+                    {
+                        "size": [0.5, 0, 0.5, 0],
+                        "position": [0.5, 0, 0.5, 0],
+                        "anchor": [0.5, 0.5],
+                        "text": "§lh.internal.ui_design.main::container.text-main§",
+                        "use_style": "container.text"
+                    },
+                    "contains": []
+                }
+            ]
+        }
+    ]
+}

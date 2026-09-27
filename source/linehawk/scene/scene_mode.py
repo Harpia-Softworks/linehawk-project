@@ -19,7 +19,10 @@ class SceneMode:
         # TODO: On the future, load this from `root:Theme.json` at
         # `WarehouseService` trigger.
         theme: UITheme = (
-            UITheme(self.shared_core.warehouse_service)
+            UITheme(
+                self.shared_core.warehouse_service,
+                self.shared_core.language_service
+            )
             .add(
                 "default",
                 UIStyle(
@@ -65,7 +68,7 @@ class SceneMode:
             position=UIDim(0.5, 0, 0.2, 0),
             use_theme="default"
         )
-        text_0.set_text("BRUH")
+        text_0.set_text("§lh.internal.ui_design.main::container.text-main§")
         self.ui_display.add_child("box_0", box_0)
         box_0.add_child("box_1", box_1)
         box_0.add_child("text_0", text_0)

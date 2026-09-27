@@ -1,17 +1,12 @@
-WAREHOUSE_CACHE_TYPE_EMPTY: int                                             = 0
-WAREHOUSE_CACHE_TYPE_FONT: int                                              = 1
-WAREHOUSE_CACHE_TYPE_IMAGE: int                                             = 2
-
-
 from linehawk.linehawk_error import LineHawkError
 import enum
 import typing
 import pygame
-
 class WarehouseCacheType(enum.IntEnum):
     EMPTY = 0
     FONT = 1
     IMAGE = 2
+    JSON = 3
 
 class WarehouseCacheError(LineHawkError):
     def __init__(self, *args: object) -> None:
@@ -46,6 +41,8 @@ class WarehouseCache:
                 tag = "font"
             case WarehouseCacheType.IMAGE:
                 tag = "image"
+            case WarehouseCacheType.JSON:
+                tag = "json"
         return tag
 
     def get_type(self) -> WarehouseCacheType:
@@ -66,5 +63,14 @@ class WarehouseCache:
         else:
             raise WarehouseCacheImpossibleConvertToError(
                 WarehouseCacheType.IMAGE,
+                self.__type
+            )
+
+    def get_json(self) -> typing.Dict[str, typing.Any]:
+        if self.__type == WarehouseCacheType.JSON:
+            return typing.cast(typing.Dict[str, typing.Any], self.__holding)
+        else:
+            raise WarehouseCacheImpossibleConvertToError(
+                WarehouseCacheType.JSON,
                 self.__type
             )
