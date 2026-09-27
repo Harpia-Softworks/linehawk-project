@@ -40,7 +40,6 @@ class UICursor:
     
 class UIDisplay(UIElement):
     # All the `UIDisplay` has a `root` content.
-    _root: UIFrame
     __display_surface: pygame.Surface
     __theme: UITheme
     __cursor: UICursor
@@ -50,12 +49,6 @@ class UIDisplay(UIElement):
         self.__display_surface = display_surface
         self.__theme = theme
         self.__cursor = UICursor(self.__display_surface)
-
-        # NOTE: The `_root` base frame is always on window:
-        self._root = UIFrame(self)
-        self._root.set_size(UIDim(1, 0, 1, 0))
-        self._root.set_position(UIDim(0, 0, 0, 0))
-        self._root.set_pivot(pygame.Vector2(0, 0))
 
     # NOTE: we gotta modify this:
     def get_surface(self) -> pygame.Surface:
@@ -71,14 +64,11 @@ class UIDisplay(UIElement):
         # NOTE: Update the `cursor` position, the `cursor` is always the first
         # to be updated on the `UIDisplay`!
         self.__cursor.tick()
-        self._root.tick()
         return self
 
     # Draw:
 
     def _internal_draw(self) -> typing.Self:
-        self._root.draw()
-
         # NOTE: Draw the `cursor`, the `cursor` is always the LAST to be 
         # drawn, so nothing stays in the way of the cursor.
         self.__cursor.draw()
@@ -87,14 +77,6 @@ class UIDisplay(UIElement):
     def get_theme(self) -> UITheme:
         # Eventually, all roads must lead here.
         return self.__theme
-
-    # Redirect to `root`:
-    def add_child(self, name: str, child: UIElement) -> typing.Self:
-        self._root.add_child(name, child)
-        return self
-
-    def get_child(self, name: str) -> UIElement:
-        return self._root.get_child(name)
 
     # Base Iteractions:
     def mouse_down(self) -> None:

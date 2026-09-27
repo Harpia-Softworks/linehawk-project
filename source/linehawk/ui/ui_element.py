@@ -30,13 +30,17 @@ class UIElement:
         position: typing.NotRequired[UIDim]
         pivot: typing.NotRequired[pygame.Vector2]
         zindex: typing.NotRequired[int]
-        use_theme: typing.NotRequired[str]
+        use_style: typing.NotRequired[str]
         visible: typing.NotRequired[bool]
         on_click: typing.NotRequired[typing.Callable[[UIElement], None]]
+        text: typing.NotRequired[str]
 
     # Information about the `UIElement` and the descendents:
     type: int
     _children: typing.Dict[str, 'UIElement']
+
+    # Properties:
+    _text: str
 
     # Dimensions of the `UI` element:
     _size: UIDim
@@ -65,6 +69,7 @@ class UIElement:
             parent: UIElement,
             **kwargs: typing.Unpack[UIElementKwargs]
     ) -> None:
+        print(kwargs, type)
         self._parent = parent
 
         # Continue by defining the types and more.
@@ -76,9 +81,12 @@ class UIElement:
         self._position = kwargs.get("position", UIDim())
         self._zindex = kwargs.get("zindex", 0)
         self._pivot = kwargs.get("pivot", pygame.Vector2(0, 0))
-        self._using_theme = kwargs.get("use_theme", "default")
+        self._using_style = kwargs.get("use_style", "default")
         self._visible = kwargs.get("visible", True)
         self._on_click = kwargs.get("on_click", None)
+
+        # Data:
+        self._text = kwargs.get("text", "...")
 
         # ??
         self._surface = pygame.Surface((0, 0))
@@ -167,10 +175,10 @@ class UIElement:
         return self
 
     def get_using_theme(self) -> str:
-        return self._using_theme
+        return self._using_style
 
     def set_using_theme(self, new: str) -> typing.Self:
-        self._using_theme = new
+        self._using_style = new
         self._need_regeneration = True
         return self
 
@@ -199,6 +207,7 @@ class UIElement:
         )
         render_at.x -= (self._surface.get_width() * self._pivot.x)
         render_at.y -= (self._surface.get_height() * self._pivot.y)
+        print(self._pivot)
         self._parent.get_surface().blit(self._surface, render_at)
         return self
 

@@ -26,7 +26,6 @@ class LanguageService(BaseService):
                         break
                     key += s_current_char
                 key_content: typing.Optional[str] = self.__get_key(key)
-                print(key_content)
                 if key_content:
                     accumulator += key_content
                 else:

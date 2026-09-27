@@ -21,7 +21,7 @@ class UIFrame(UIElement):
         # Paint:
         self._surface.fill(
             self.get_theme()
-                .get(self._using_theme)
+                .get(self._using_style)
                 .background_color
         )
         self._need_regeneration = False

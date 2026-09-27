@@ -6,16 +6,13 @@ from linehawk.core.services.warehouse.warehouse_promise import WarehousePromise
 import pygame
 import typing
 
-class UITextLabel(UIElement): 
-    _text: str
-
+class UITextLabel(UIElement):     
     def __init__(
             self,
             parent: UIElement,
             **kwargs: typing.Unpack[UIElement.UIElementKwargs]
     ) -> None:
         super().__init__(UI_TYPE_TEXT_LABEL, parent, **kwargs)
-        self._text = ""
 
     # set and get:
     def set_text(self, new: str) -> typing.Self:
@@ -40,10 +37,10 @@ class UITextLabel(UIElement):
                 .get_warehouse_service()
                 .get_font(
                     using_theme
-                        .get(self._using_theme)
+                        .get(self._using_style)
                         .font,
                     using_theme
-                        .get(self._using_theme)
+                        .get(self._using_style)
                         .font_size
                 )
         )
@@ -58,7 +55,7 @@ class UITextLabel(UIElement):
             if maybe_text:
                 self._surface.fill(
                     using_theme
-                        .get(self._using_theme)
+                        .get(self._using_style)
                         .background_color
                 )
                 font: pygame.font.Font = (
@@ -68,7 +65,7 @@ class UITextLabel(UIElement):
                     maybe_text,
                     False,
                     using_theme
-                        .get(self._using_theme)
+                        .get(self._using_style)
                         .foreground_color
                 )
                 self._surface.blit(font_render, (0, 0))

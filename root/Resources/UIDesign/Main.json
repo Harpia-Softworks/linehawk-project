@@ -1,7 +1,6 @@
 {
     "theme": "root:Theme/Default.json",
-    "contains":
-    [
+    "root":
         {
             "name": "container",
             "type": "frame",
@@ -9,7 +8,7 @@
             {
                 "size": [1, 0, 1, 0],
                 "position": [0, 0, 0, 0],
-                "anchor": [0, 0],
+                "pivot": [0, 0],
                 "use_style": "container"
             },
             "contains":
@@ -19,9 +18,9 @@
                     "type": "text_label",
                     "properties": 
                     {
-                        "size": [0.5, 0, 0.5, 0],
+                        "size": [0.25, 0, 0.25, 0],
                         "position": [0.5, 0, 0.5, 0],
-                        "anchor": [0.5, 0.5],
+                        "pivot": [0.5, 0.5],
                         "text": "§lh.internal.ui_design.main::container.text-main§",
                         "use_style": "container.text"
                     },
@@ -29,5 +28,4 @@
                 }
             ]
         }
-    ]
 }
