@@ -7,7 +7,6 @@ import typing
 #
 # Basic(S)
 #
-
 class Window:
     surface: pygame.Surface
 
@@ -67,7 +66,6 @@ class GraphicsService(BaseService):
 
         # Initialize the content:
         self.window = Window()
-
 class WarehouseService(BaseService):
     """Contains loaded surfaces and more."""
 
@@ -381,6 +379,12 @@ class UIElement:
 
     # Draw:
     def _internal_draw(self) -> typing.Self:
+        render_at: pygame.Vector2 = self._position.calculate(
+            self._parent.get_surface()
+        )
+        render_at.x -= (self._surface.get_width() * self._pivot.x)
+        render_at.y -= (self._surface.get_height() * self._pivot.y)
+        self._parent.get_surface().blit(self._surface, render_at)
         return self
 
     def draw(self) -> typing.Self:
@@ -435,16 +439,6 @@ class UIFrame(UIElement):
                 .get(self._using_theme)
                 .background_color
         )
-        return self
-
-    # This is overwriten to _draw() our `UIFrame`:
-    def _internal_draw(self) -> typing.Self:
-        render_at: pygame.Vector2 = self._position.calculate(
-            self._parent.get_surface()
-        )
-        render_at.x -= (self._surface.get_width() * self._pivot.x)
-        render_at.y -= (self._surface.get_height() * self._pivot.y)
-        self._parent.get_surface().blit(self._surface, render_at)
         return self
 
 class UICursor:
