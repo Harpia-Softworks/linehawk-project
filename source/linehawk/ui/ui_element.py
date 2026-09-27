@@ -45,6 +45,7 @@ class UIElement:
     _zindex: int
     _using_theme: str
     _visible: bool
+    _need_regeneration: bool
 
     # Events:
     _on_click: typing.Optional[ typing.Callable[[UIElement], None] ]
@@ -81,9 +82,7 @@ class UIElement:
 
         # ??
         self._surface = pygame.Surface((0, 0))
-
-        # First Regeneration:
-        self._internal_regeneration()
+        self._need_regeneration = True
 
     # For bounding box:
     def get_absolute_position(self) -> pygame.Vector2:
@@ -140,7 +139,7 @@ class UIElement:
     
     def set_size(self, new: UIDim) -> typing.Self:
         self._size = new
-        self._internal_regeneration()
+        self._need_regeneration = True
         return self
 
     def get_position(self) -> UIDim:
@@ -148,7 +147,7 @@ class UIElement:
 
     def set_position(self, new: UIDim) -> typing.Self:
         self._position = new
-        self._internal_regeneration()
+        self._need_regeneration = True
         return self
 
     def get_zindex(self) -> int:
@@ -156,7 +155,7 @@ class UIElement:
 
     def set_zindex(self, new: int) -> typing.Self:
         self._zindex = new
-        self._internal_regeneration()
+        self._need_regeneration = True
         return self
 
     def get_pivot(self) -> pygame.Vector2:
@@ -164,7 +163,7 @@ class UIElement:
 
     def set_pivot(self, new: pygame.Vector2) -> typing.Self:
         self._pivot = new
-        self._internal_regeneration()
+        self._need_regeneration = True
         return self
 
     def get_using_theme(self) -> str:
@@ -172,7 +171,7 @@ class UIElement:
 
     def set_using_theme(self, new: str) -> typing.Self:
         self._using_theme = new
-        self._internal_regeneration()
+        self._need_regeneration = True
         return self
 
     # Regenerate:
@@ -185,6 +184,9 @@ class UIElement:
         return self
 
     def tick(self) -> UIElement:
+        # NOTE: Do we need to `regenerate the item?`
+        if self._need_regeneration:
+            self._internal_regeneration()
         self._internal_tick()
         for key in self._children:
             self._children[key].tick()

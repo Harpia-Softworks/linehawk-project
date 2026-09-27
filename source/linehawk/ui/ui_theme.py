@@ -1,4 +1,5 @@
 from linehawk.ui.ui_style import UIStyle
+from linehawk.core.services.warehouse.warehouse_service import WarehouseService
 import typing
 
 class UIThemeError(BaseException):
@@ -22,9 +23,14 @@ class UIThemeStyleNotFoundError(UIThemeError):
 class UITheme:
     """Contains an variety of `UIStyle` one can choose."""
     _data: typing.Dict[str, 'UIStyle']
-    
-    def __init__(self) -> None:
+    _warehouse_service: WarehouseService
+
+    def __init__(self, warehouse_service: WarehouseService) -> None:
         self._data = dict()
+        self._warehouse_service = warehouse_service
+
+    def get_warehouse_service(self) -> WarehouseService:
+        return self._warehouse_service
 
     def add(self, key: str, style: UIStyle) -> typing.Self:
         if key in self._data:

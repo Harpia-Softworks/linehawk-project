@@ -3,6 +3,7 @@ from linehawk.ui.ui_theme import UITheme
 from linehawk.ui.ui_style import UIStyle
 from linehawk.ui.ui_frame import UIFrame
 from linehawk.ui.ui_dim import UIDim
+from linehawk.ui.ui_text_label import UITextLabel
 
 from linehawk.core.shared_core import SharedCore
 import pygame
@@ -18,7 +19,7 @@ class SceneMode:
         # TODO: On the future, load this from `root:Theme.json` at
         # `WarehouseService` trigger.
         theme: UITheme = (
-            UITheme()
+            UITheme(self.shared_core.warehouse_service)
             .add(
                 "default",
                 UIStyle(
@@ -58,9 +59,16 @@ class SceneMode:
             use_theme="alternate",
             on_click=lambda k: print("nope")
         )
-
+        text_0: UITextLabel = UITextLabel(
+            box_0,
+            size=UIDim(0.25, 0, 0.25, 0),
+            position=UIDim(0.5, 0, 0.2, 0),
+            use_theme="default"
+        )
+        text_0.set_text("BRUH")
         self.ui_display.add_child("box_0", box_0)
         box_0.add_child("box_1", box_1)
+        box_0.add_child("text_0", text_0)
 
     def perform_event(self, event: pygame.Event) -> None:
         match event.type:
@@ -75,6 +83,11 @@ class SceneMode:
                 print(f'Discarding event = {repr(event)}')
 
     def tick(self) -> SceneMode:
+        # Tick the Services:
+        self.shared_core.runtime_service.tick()
+        self.shared_core.graphics_service.tick()
+        self.shared_core.warehouse_service.tick()
+        
         # The event system:
         grabbed_events: typing.List[pygame.Event] = pygame.event.get()
         for event in grabbed_events:
@@ -89,6 +102,11 @@ class SceneMode:
 
         # Draw the UI:
         self.ui_display.draw()
+
+        # Draw the Services:
+        self.shared_core.runtime_service.draw()
+        self.shared_core.graphics_service.draw()
+        self.shared_core.warehouse_service.draw()
 
         pygame.display.update()
         return self

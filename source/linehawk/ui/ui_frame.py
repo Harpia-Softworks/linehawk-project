@@ -24,4 +24,5 @@ class UIFrame(UIElement):
                 .get(self._using_theme)
                 .background_color
         )
+        self._need_regeneration = False
         return self
