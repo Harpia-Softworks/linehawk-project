@@ -1,31 +1,122 @@
 {
     "theme": "root:Theme/Default.json",
     "root":
+    {
+        "name": "container",
+        "type": "frame",
+        "properties":
         {
-            "name": "container",
-            "type": "frame",
-            "properties":
+            "size": [1, 0, 1, 0],
+            "position": [0, 0, 0, 0],
+            "pivot": [0, 0],
+            "use_style": "container"
+        },
+        "contains":
+        [
             {
-                "size": [1, 0, 1, 0],
-                "position": [0, 0, 0, 0],
-                "pivot": [0, 0],
-                "use_style": "container"
-            },
-            "contains":
-            [
+                "name": "LeftBar",
+                "type": "frame",
+                "properties":
                 {
-                    "name": "text",
-                    "type": "text_label",
-                    "properties": 
+                    "size": [0.25, 0, 1, 0],
+                    "position": [0, 0, 0, 0],
+                    "pivot": [0, 0],
+                    "use_style": "container.LeftBar"
+                },
+                "contains": [
                     {
-                        "size": [0.25, 0, 0.25, 0],
-                        "position": [0.5, 0, 0.5, 0],
-                        "pivot": [0.5, 0.5],
-                        "text": "§lh.internal.ui_design.main::container.text-main§",
-                        "use_style": "container.text"
+                        "name": "TitleBox",
+                        "type": "frame",
+                        "properties":
+                        {
+                            "size": [1, 0, 0.10, 0],
+                            "position": [0, 0, 0, 0],
+                            "pivot": [0, 0],
+                            "use_style": "container.LeftBar.TitleBox"
+                        },
+                        "contains":
+                        [
+                            {
+                                "name": "TextItem",
+                                "type": "text_label",
+                                "properties":
+                                {
+                                    "size": [1, 0, 1, 0],
+                                    "position": [0, 0, 0, 0],
+                                    "pivot": [0, 0],
+                                    "use_style": "container.LeftBar.TitleBox.TextItem",
+                                    "text": "§lh.internal.ui_design.main::container.LeftSide.TitleBox.TextItem-main§"
+                                },
+                                "contains": []
+                            }
+                        ]
                     },
-                    "contains": []
-                }
-            ]
-        }
+                    {
+                        "name": "OptionsBox",
+                        "type": "frame",
+                        "properties":
+                        {
+                            "size": [1, 0, 0.80, 0],
+                            "position": [0, 0, 0.10, 0],
+                            "pivot": [0, 0],
+                            "use_style": "container.LeftBar.OptionsBox"
+                        },
+                        "contains": []
+                    },
+                    {
+                        "name": "ActionBox",
+                        "type": "frame",
+                        "properties":
+                        {
+                            "size": [1, 0, 0.10, 0],
+                            "position": [0, 0, 0.90, 0],
+                            "pivot": [0, 0],
+                            "use_style": "container.LeftBar.ActionBox"
+                        },
+                        "contains": [
+                            {
+                                "name": "StartButton",
+                                "type": "text_button",
+                                "properties":
+                                {
+                                    "size": [1, 0, 1, 0],
+                                    "position": [0, 0, 0, 0],
+                                    "pivot": [0, 0],
+                                    "use_style": "container.LeftBar.ActionBox.StartButton",
+                                    "text": "§lh.internal.ui_design.main::container.LeftBar.ActionBox.StartButton-main§"
+                                },
+                                "contains": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "CreatorsInformation",
+                "type": "frame",
+                "properties":
+                {
+                    "size": [0.50, 0, 0.050, 0],
+                    "position": [1, 0, 1, 0],
+                    "pivot": [1, 1],
+                    "use_style": "container.CreatorsInformation"
+                },
+                "contains": [
+                    {
+                        "name": "CopyrightText",
+                        "type": "text_label",
+                        "properties":
+                        {
+                            "size": [1, 0, 1, 0],
+                            "position": [0, 0, 0, 0],
+                            "pivot": [0, 0],
+                            "use_style": "container.CreatorsInformation.CopyrightText",
+                            "text": "§lh.internal.ui_design.main::container.CreatorsInformation.CopyrightText-main§"
+                        },
+                        "contains": []
+                    }
+                ]
+            }
+        ]
+    }
 }

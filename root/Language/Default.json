@@ -7,6 +7,9 @@
     },
     "data":
     {
-        "lh.internal.ui_design.main::container.text-main": "Hello World!"
+        "lh.internal.ui_design.main::container.text-main": "Hello World!",
+        "lh.internal.ui_design.main::container.LeftSide.TitleBox.TextItem-main": "Simulation Configuration",
+        "lh.internal.ui_design.main::container.LeftBar.ActionBox.StartButton-main": "Start",
+        "lh.internal.ui_design.main::container.CreatorsInformation.CopyrightText-main": "2026 LineHawk by Harpia Software & Contribuitors"
     }
 }

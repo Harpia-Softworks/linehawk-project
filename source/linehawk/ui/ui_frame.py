@@ -15,9 +15,16 @@ class UIFrame(UIElement):
         super().__init__(UI_TYPE_FRAME, parent, **kwargs)
 
     def _internal_regeneration(self) -> typing.Self:
-        self._surface = pygame.Surface(
-            self._size.calculate(self._parent.get_surface())
+        self._surface = (
+            pygame.Surface(
+                self._size.calculate(self._parent.get_surface())
+            )
+            .convert_alpha()
         )
+
+        # HACK: This `fixes` some problems with `A` layer.
+        self._surface.fill(( 0, 0, 0, 0 ))
+
         # Paint:
         self._surface.fill(
             self.get_theme()

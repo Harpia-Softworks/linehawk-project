@@ -1,6 +1,7 @@
 from linehawk.ui.ui_display import UIDisplay
 from linehawk.ui.ui_frame import UIFrame
 from linehawk.ui.ui_text_label import UITextLabel
+from linehawk.ui.ui_text_button import UITextButton
 from linehawk.ui.ui_theme import UITheme
 from linehawk.ui.ui_style import UIStyle
 from linehawk.ui.ui_element import UIElement
@@ -47,6 +48,12 @@ class UIControllerElementPropertyConverterError(UIControllerError):
         self.raw = raw
         super().__init__(message)
 
+class UIControllerNoDisplayFoundError(UIControllerError):
+    bad_name: str
+    def __init__(self, bad_name: str) -> None:
+        self.bad_name = bad_name
+        super().__init__(f'No display named: {self.bad_name}')
+
 class UIController:
     __displays: typing.Dict[str, UIDisplay]
     __requests: typing.List[_UIControllerLoadRequest]
@@ -71,7 +78,7 @@ class UIController:
                     "Expected Color4/Color3"
                 )
             else:
-                return pygame.Color(raw)
+                return pygame.Color(raw[0], raw[1], raw[2], raw[3])
         else:
             raise UIControllerStyleRawConverterError(
                 raw,
@@ -171,7 +178,7 @@ class UIController:
                 .window
                 .surface
                 .get_size()
-        )
+        ).convert_alpha()
 
         # Load Conversion Tables:
         self.__style_field_conversion_table = {
@@ -296,6 +303,8 @@ class UIController:
                     element = UIFrame(parent, **valid_properties)
                 case "text_label":
                     element = UITextLabel(parent, **valid_properties)
+                case "text_button":
+                    element = UITextButton(parent, **valid_properties)
                 case _:
                     raise UIControllerNoUIElementOfTypeError(element_type)
             parent.add_child(element_name, element)
@@ -311,6 +320,23 @@ class UIController:
         base_display: UIDisplay = UIDisplay(self.__output_surface, maybe_theme)
         build(typing.cast(typing.Dict[str, typing.Any], recipe["root"]), base_display)
         return base_display
+
+    def get(self, name: str) -> typing.Optional[UIDisplay]:
+        """
+        The `.get` is used to test if the display is present, for direct error,
+        you should try: `.with_display()`
+        """
+        return self.__displays.get(name)
+
+    def with_display(self, name: str) -> UIDisplay:
+        """
+        This way of querying a display will result in a crash when the name
+        is not found!
+        """
+        if name in self.__displays:
+            return self.__displays[name]
+        else:
+            raise UIControllerNoDisplayFoundError(name)
 
     def tick(self) -> typing.Self:
         quota: int = len(self.__requests)
@@ -340,6 +366,7 @@ class UIController:
 
     def draw(self) -> typing.Self:
         self.__output_surface.fill((0, 0, 0, 0))
+
         for name in self.__displays:
             self.__displays[name].draw()
         (
@@ -351,3 +378,27 @@ class UIController:
                 .blit(self.__output_surface, (0, 0))
         )
         return self
+    
+    # Events:
+    def game_viewport_resize(self, new_size: pygame.Vector2) -> None:
+        # Sets everything to be spawned again.
+        new_ui_viewport: pygame.Surface = (
+            pygame
+                .Surface(new_size)
+                .convert_alpha()
+        )
+        for display in self.__displays:
+            (
+                self.__displays[display]
+                .switch_display_surface(new_ui_viewport)
+                .reload()
+            )
+        self.__output_surface = new_ui_viewport
+
+    def mouse_down(self) -> None:
+        # Pass forward:
+        for display in self.__displays:
+            (
+                self.__displays[display]
+                .handle_click()
+            )

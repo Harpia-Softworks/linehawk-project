@@ -16,6 +16,19 @@ class UIElementNotFoundError(UIElementError):
         self.name = name
         super().__init__(f'Not found element: {self.name}')
 
+class UIElementInvalidPathError(UIElementError):
+    """
+    @note Used by `UIElement.get()` method.
+    """
+    path: str
+    at_element: str
+    index: int
+    def __init__(self, path: str, at_element: str, index: int) -> None:
+        self.path = path
+        self.at_element = at_element
+        self.index = index
+        super().__init__(f'On query: {path}, failed to get element: {at_element} (INDEX: {index})')
+
 class UIElementChildAlreadyPresentError(UIElementError):
     name: str
     def __init__(self, name: str) -> None:
@@ -88,7 +101,11 @@ class UIElement:
         self._text = kwargs.get("text", "...")
 
         # ??
-        self._surface = pygame.Surface((0, 0))
+        self._surface = (
+            pygame
+                .Surface((0, 0))
+                .convert_alpha()
+        )
         self._need_regeneration = True
 
     # For bounding box:
@@ -119,25 +136,34 @@ class UIElement:
 
     # Cursor & Interaction:
     def get_collision(self, rect: pygame.Rect) -> typing.Optional[UIElement]:
-        if not self._visible:
-            return None
-        
-        base_rectangle: pygame.Rect = self.get_bounding_box()
-        if not base_rectangle.colliderect(rect):
-            return None
+        if not self._visible: return None
 
-        # We need to order the elements:
+        # Calculate an `bounding_box()` so we can test for possible cursor
+        # collisions by the way.
+        base_rectangle: pygame.Rect = self.get_bounding_box()
+
+        # Not any collisions, then we don't even return anything.
+        if not base_rectangle.colliderect(rect): return None
+
+        # To prevent errors such as click racing, we do this.
         sorted_children = sorted(
             self._children.values(),
             key=lambda v: v.get_zindex(),
             reverse=True
         )
 
+        # By the Sorted Elements, we get the collision from them.
         for child in sorted_children:
             hit = child.get_collision(rect)
             if hit is not None:
                 return hit
-            
+
+        # NOTE: We only return an item that supports mouse.
+        return self
+
+    def on_mouse_event(self) -> UIElement:
+        if self._on_click is not None:
+            self._on_click(self)
         return self
 
     # Various `get_` and `set_`:
@@ -181,6 +207,13 @@ class UIElement:
         self._need_regeneration = True
         return self
 
+    def set_on_click(
+            self,
+            new: typing.Callable[[UIElement], None]
+    ) -> typing.Self:
+        self._on_click = new        
+        return self
+
     # Regenerate:
     def _internal_regeneration(self) -> typing.Self:
         return self
@@ -202,11 +235,18 @@ class UIElement:
     # Draw:
     def _internal_draw(self) -> typing.Self:
         render_at: pygame.Vector2 = self._position.calculate(
-            self._parent.get_surface()
+            self
+                ._parent
+                .get_surface()
         )
         render_at.x -= (self._surface.get_width() * self._pivot.x)
         render_at.y -= (self._surface.get_height() * self._pivot.y)
-        self._parent.get_surface().blit(self._surface, render_at)
+        (
+            self
+                ._parent
+                .get_surface()
+                .blit(self._surface, render_at)
+        )
         return self
 
     def draw(self) -> typing.Self:
@@ -214,6 +254,22 @@ class UIElement:
         for key in self._children:
             self._children[key].draw()
         return self
+
+    # Get
+
+    def query(
+            self,
+            path: str,
+            separator: str = '.'
+    ) -> UIElement:
+        current_element: UIElement = self
+        path_split: typing.List[str] = path.split(separator)
+        for index, key in enumerate(path_split):
+            if key in current_element._children:
+                current_element = current_element._children[key]
+            else:
+                raise UIElementInvalidPathError(path, key, index)
+        return current_element
 
     # Add & Management:
     def get_child(self, name: str) -> UIElement:
@@ -233,7 +289,7 @@ class UIElement:
     def get_theme(self) -> UITheme:
         return self._parent.get_theme()
 
-    def react_click(self) -> UIElement:
-        if self._on_click is not None:
-            self._on_click(self)
-        return self
+    def reload(self) -> None:
+        self._need_regeneration = True
+        for child in self._children:
+            self._children[child].reload()

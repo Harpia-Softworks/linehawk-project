@@ -4,14 +4,56 @@
     {
         "container":
         {
-            "background_color": [255, 255, 255, 255]
+            "background_color": [255, 255, 255, 0]
         },
-        "container.text":
+
+        "container.LeftBar":
         {
-            "background_color": [0, 0, 0, 0],
-            "foreground_color": [255, 255, 255, 255],
+            "background_color": [193, 255, 182, 255]
+        },
+
+        "container.LeftBar.TitleBox":
+        {
+            "background_color": [182, 230, 255, 255]
+        },
+
+        "container.LeftBar.OptionsBox":
+        {
+            "background_color": [255,207,182, 255]
+        },
+
+        "container.LeftBar.ActionBox":
+        {
+            "background_color": [255, 182, 193, 255]
+        },
+
+        "container.LeftBar.ActionBox.StartButton":
+        {
+            "background_color": [255, 182, 193, 0],
+            "foreground_color": [25, 25, 25, 0],
             "font": "root:Fonts/System/Default.ttf",
             "font_size": 12
+        },
+
+        "container.LeftBar.TitleBox.TextItem":
+        {
+            "background_color": [0, 0, 0, 0],
+            "foreground_color": [25, 25, 25, 0],
+            "font": "root:Fonts/System/Default.ttf",
+            "font_size": 12
+        },
+
+        "container.CreatorsInformation":
+        {
+            "background_color": [150, 150, 150, 150]
+        },
+
+        "container.CreatorsInformation.CopyrightText":
+        {
+            "background_color": [0, 0, 0, 0],
+            "foreground_color": [25, 25, 25, 0],
+            "font": "root:Fonts/System/Default.ttf",
+            "font_size": 10
         }
     }
 }

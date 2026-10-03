@@ -1,6 +1,4 @@
 from linehawk.ui.ui_element import UIElement
-from linehawk.ui.ui_frame import UIFrame
-from linehawk.ui.ui_dim import UIDim
 from linehawk.ui.ui_theme import UITheme
 from linehawk.ui.ui_types import *
 
@@ -23,8 +21,12 @@ class UICursor:
         self.__display_surface = display_surface
 
         # TODO: on the future, load some custom cursor.
-        self.__surface = pygame.Surface(self.__size)
-        self.__surface.fill((255, 255, 255))
+        self.__surface = (
+            pygame
+                .Surface(self.__size)
+                .convert_alpha()
+        )
+        self.__surface.fill((255, 255, 255, 255))
 
     def tick(self) -> typing.Self:
         mouse_at_x, mouse_at_y = pygame.mouse.get_pos()
@@ -43,6 +45,7 @@ class UIDisplay(UIElement):
     __display_surface: pygame.Surface
     __theme: UITheme
     __cursor: UICursor
+    __regenerate_on: int
 
     def __init__(self, display_surface: pygame.Surface, theme: UITheme) -> None:
         super().__init__(UI_TYPE_DISPLAY, self)
@@ -59,6 +62,18 @@ class UIDisplay(UIElement):
         # NOTE: For the display, we don't do this:
         return pygame.Vector2(0, 0)
 
+    # Mouse & Interaction:
+    def handle_click(self) -> UIElement:
+        for child in self._children:
+            hit: typing.Optional[UIElement] = (
+                self
+                    ._children[child]
+                    .get_collision(self.__cursor.get_rectangle())
+            )
+            if hit is not None:
+                hit.on_mouse_event()
+        return self
+
     # Tick:
     def _internal_tick(self) -> typing.Self:
         # NOTE: Update the `cursor` position, the `cursor` is always the first
@@ -67,6 +82,11 @@ class UIDisplay(UIElement):
         return self
 
     # Draw:
+    def draw(self) -> typing.Self:
+        for key in self._children:
+            self._children[key].draw()
+        self._internal_draw()
+        return self
 
     def _internal_draw(self) -> typing.Self:
         # NOTE: Draw the `cursor`, the `cursor` is always the LAST to be 
@@ -78,14 +98,9 @@ class UIDisplay(UIElement):
         # Eventually, all roads must lead here.
         return self.__theme
 
-    # Base Iteractions:
-    def mouse_down(self) -> None:
-        hit: typing.Optional[UIElement] = self._root.get_collision(
-            self.__cursor.get_rectangle()
-        )
-        if hit is not None:
-            hit.react_click()
-
-    def mouse_up(self) -> None:
-        # TODO: implement this.
-        return
+    def switch_display_surface(
+            self,
+            new_display: pygame.Surface
+    ) -> typing.Self:
+        self.__display_surface = new_display
+        return self

@@ -17,11 +17,11 @@ class UIStyle:
     def __init__(self, **kwargs: typing.Unpack[UIStyleKwargs]) -> None:
         self.background_color = kwargs.get(
             "background_color",
-            pygame.Color(0, 0, 0)
+            pygame.Color(0, 0, 0, 255)
         )
         self.foreground_color = kwargs.get(
             "foreground_color",
-            pygame.Color(255, 255, 255)
+            pygame.Color(255, 255, 255, 255)
         )
         self.font = kwargs.get(
             "font",

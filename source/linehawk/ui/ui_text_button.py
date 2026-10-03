@@ -3,10 +3,18 @@ from linehawk.ui.ui_text_element import UITextElement
 from linehawk.ui.ui_types import *
 import typing
 
-class UITextLabel(UITextElement):     
+class UITextButton(UITextElement):
     def __init__(
             self,
             parent: UIElement,
             **kwargs: typing.Unpack[UIElement.UIElementKwargs]
     ) -> None:
-        super().__init__(UI_TYPE_TEXT_LABEL, parent, **kwargs)
+        super().__init__(UI_TYPE_TEXT_BUTTON, parent, **kwargs)
+
+    def _internal_regeneration(self) -> typing.Self:
+        # NOTE: Render the text:
+        super()._internal_regeneration()
+
+        # NOTE: Render the bevels:
+
+        return self
