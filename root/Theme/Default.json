@@ -7,6 +7,14 @@
             "background_color": [255, 255, 255, 0]
         },
 
+        "container.ShowLeftBarButton":
+        {
+            "background_color": [255, 207, 182, 255],
+            "foreground_color": [25, 25, 25, 0],
+            "font": "root:Fonts/System/Default.ttf",
+            "font_size": 12
+        },
+
         "container.LeftBar":
         {
             "background_color": [193, 255, 182, 255]
@@ -29,7 +37,15 @@
 
         "container.LeftBar.ActionBox.StartButton":
         {
-            "background_color": [255, 182, 193, 0],
+            "background_color": [182, 255, 207, 255],
+            "foreground_color": [25, 25, 25, 0],
+            "font": "root:Fonts/System/Default.ttf",
+            "font_size": 12
+        },
+
+        "container.LeftBar.ActionBox.HideLeftBarButton":
+        {
+            "background_color": [207, 182, 255, 255],
             "foreground_color": [25, 25, 25, 0],
             "font": "root:Fonts/System/Default.ttf",
             "font_size": 12

@@ -65,13 +65,16 @@ class UITextElement(UIElement):
                         .get(self._using_style)
                         .background_color
                 )
+
                 font: pygame.font.Font = (
-                    maybe_font.get().get_font()
+                    maybe_font
+                        .get()
+                        .get_font()
                 )
 
                 # NOTE: Can we fit the `maybe_text` on the screen.
                 takes_w, takes_h = font.size(maybe_text)
-                print(takes_w, takes_h, self._surface.get_size())
+
                 if (
                     (takes_w <= self._surface.get_width()) and
                     (takes_h <= self._surface.get_height())

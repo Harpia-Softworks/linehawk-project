@@ -10,11 +10,3 @@ class UITextButton(UITextElement):
             **kwargs: typing.Unpack[UIElement.UIElementKwargs]
     ) -> None:
         super().__init__(UI_TYPE_TEXT_BUTTON, parent, **kwargs)
-
-    def _internal_regeneration(self) -> typing.Self:
-        # NOTE: Render the text:
-        super()._internal_regeneration()
-
-        # NOTE: Render the bevels:
-
-        return self

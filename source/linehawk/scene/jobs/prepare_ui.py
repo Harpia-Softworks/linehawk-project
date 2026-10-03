@@ -43,10 +43,63 @@ class PrepareUI:
                 .get_userdata(PrepareUI)
                 .ui_controller
                 .with_display("main")
-                .query("container.LeftBar.ActionBox.StartButton")
-                .set_on_click(lambda _: print("bruh"))
+                .query("container.LeftBar.ActionBox.HideLeftBarButton")
+                .set_on_click(
+                    lambda _: PrepareUI.hide_left_bar_button_action(
+                        job
+                            .get_userdata(PrepareUI)
+                            .ui_controller
+                    )
+                )
+        )
+        (
+            job
+                .get_userdata(PrepareUI)
+                .ui_controller
+                .with_display("main")
+                .query("container.ShowLeftBarButton")
+                .set_on_click(
+                    lambda _: PrepareUI.show_left_bar_button_action(
+                        job
+                            .get_userdata(PrepareUI)
+                            .ui_controller
+                    )
+                )
         )
         job.advance()
+
+    @staticmethod
+    def show_left_bar_button_action(ui_controller: UIController) -> None: 
+        (
+            ui_controller
+                .with_display("main")
+                .query("container.LeftBar")
+                .set_visible(True)
+        )
+        (
+            ui_controller
+                .with_display("main")
+                .query("container.ShowLeftBarButton")
+                .set_visible(False)
+        )
+
+    @staticmethod
+    def hide_left_bar_button_action(ui_controller: UIController) -> None:
+        # Show this:
+        (
+            ui_controller
+                .with_display("main")
+                .query("container.ShowLeftBarButton")
+                .set_visible(True)
+        )
+
+        # Hide the `Left Bar`
+        (
+            ui_controller
+                .with_display("main")
+                .query("container.LeftBar")
+                .set_visible(False)
+        )
 
 PREPARE_UI_TABLE: typing.List[typing.Callable[[Job], None]] = [
     PrepareUI.load_main,

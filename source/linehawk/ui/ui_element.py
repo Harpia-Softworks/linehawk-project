@@ -39,6 +39,7 @@ class UIElement:
     """Base all the `UI` elements, even the `UIDisplay` itself."""
 
     class UIElementKwargs(typing.TypedDict):
+        name: typing.NotRequired[str]
         size: typing.NotRequired[UIDim]
         position: typing.NotRequired[UIDim]
         pivot: typing.NotRequired[pygame.Vector2]
@@ -50,6 +51,7 @@ class UIElement:
 
     # Information about the `UIElement` and the descendents:
     type: int
+    name: str
     _children: typing.Dict[str, 'UIElement']
 
     # Properties:
@@ -96,6 +98,7 @@ class UIElement:
         self._using_style = kwargs.get("use_style", "default")
         self._visible = kwargs.get("visible", True)
         self._on_click = kwargs.get("on_click", None)
+        self.name = kwargs.get("name", "null")
 
         # Data:
         self._text = kwargs.get("text", "...")
@@ -214,6 +217,27 @@ class UIElement:
         self._on_click = new        
         return self
 
+    def set_visible(
+            self,
+            value: bool
+    ) -> typing.Self:
+        # NOTE: The parent must reload it's pre-render surface, this sucks
+        # because of course, we only need to render this dirty frame \shrug
+
+        # TODO: implement smarter reload.
+        self._parent.reload()
+        self._need_regeneration = True
+        
+        self._visible = value
+        return self
+
+    def set_name(self, new: str) -> typing.Self:
+        self.name = new
+        return self
+
+    def get_name(self) -> str:
+        return self.name
+
     # Regenerate:
     def _internal_regeneration(self) -> typing.Self:
         return self
@@ -250,9 +274,10 @@ class UIElement:
         return self
 
     def draw(self) -> typing.Self:
-        self._internal_draw()
-        for key in self._children:
-            self._children[key].draw()
+        if self._visible:
+            self._internal_draw()
+            for key in self._children:
+                self._children[key].draw()
         return self
 
     # Get

@@ -79,11 +79,24 @@
                                 "type": "text_button",
                                 "properties":
                                 {
-                                    "size": [1, 0, 1, 0],
+                                    "size": [0.5, 0, 1, 0],
                                     "position": [0, 0, 0, 0],
                                     "pivot": [0, 0],
                                     "use_style": "container.LeftBar.ActionBox.StartButton",
                                     "text": "§lh.internal.ui_design.main::container.LeftBar.ActionBox.StartButton-main§"
+                                },
+                                "contains": []
+                            },
+                            {
+                                "name": "HideLeftBarButton",
+                                "type": "text_button",
+                                "properties":
+                                {
+                                    "size": [0.5, 0, 1, 0],
+                                    "position": [0.5, 0, 0, 0],
+                                    "pivot": [0, 0],
+                                    "use_style": "container.LeftBar.ActionBox.HideLeftBarButton",
+                                    "text": "§lh.internal.ui_design.main::container.LeftBar.ActionBox.HideLeftBarButton-main§"
                                 },
                                 "contains": []
                             }
@@ -116,6 +129,20 @@
                         "contains": []
                     }
                 ]
+            },
+            {
+                "name": "ShowLeftBarButton",
+                "type": "text_button",
+                "properties":
+                {
+                    "visible": false,
+                    "size": [0.15, 0, 0.050, 0],
+                    "position": [0, 0, 0, 0],
+                    "pivot": [0, 0],
+                    "use_style": "container.ShowLeftBarButton",
+                    "text": "§lh.internal.ui_design.main::container.ShowLeftBarButton-main§"
+                },
+                "contains": []
             }
         ]
     }

@@ -164,6 +164,17 @@ class UIController:
                 "Expected str"
             )
 
+    def __element_property_load_bool(
+            self,
+            raw: typing.Any
+    ) -> bool:
+        if isinstance(raw, bool):
+            return raw
+        else:
+            raise UIControllerElementPropertyConverterError(
+                raw,
+                "Expected bool"
+            )
 
     def __init__(self, shared_core: SharedCore) -> None:
         self.__displays = dict()
@@ -192,7 +203,8 @@ class UIController:
             'position': self.__element_property_load_ui_dim,
             'pivot': self.__element_property_load_vec2,
             'use_style': self.__element_property_load_str,
-            'text': self.__element_property_load_str
+            'text': self.__element_property_load_str,
+            'visible': self.__element_property_load_bool
         }
 
     def load(self, site: str, name: str) -> typing.Self:
@@ -288,6 +300,7 @@ class UIController:
 
             # Decode:
             valid_properties: typing.Dict[str, typing.Any] = dict()
+            valid_properties["name"] = element_name
             for property_name in element_properties:
                 if property_name in self.__element_property_conversion_table:
                     valid_properties[property_name] = (
