@@ -1,18 +1,22 @@
 from linehawk.scene.controllers.ui_controller import UIController
 from linehawk.scene.controllers.job_scheduler.job import *
+from linehawk.scene.simulation.simulator import *
 from linehawk.core.shared_core import SharedCore
 
 class PrepareUI:
     ui_controller: UIController
     shared_core: SharedCore
+    simulator: Simulator
 
     def __init__(
             self,
             ui_controller: UIController,
-            shared_core: SharedCore
+            shared_core: SharedCore,
+            simulator: Simulator
     ) -> None:
         self.ui_controller = ui_controller
         self.shared_core = shared_core
+        self.simulator = simulator
 
     @staticmethod
     def load_main(job: Job) -> None:

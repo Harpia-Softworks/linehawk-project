@@ -1,6 +1,7 @@
 from linehawk.scene.jobs.prepare_ui import *
 from linehawk.scene.controllers.ui_controller import UIController
 from linehawk.scene.controllers.job_scheduler.scheduler import Scheduler
+from linehawk.scene.simulation.simulator import *
 from linehawk.core.shared_core import SharedCore
 
 import pygame
@@ -10,10 +11,13 @@ class SceneMode:
     shared_core: SharedCore
     __scheduler: Scheduler
     __ui_controller: UIController
+    __simulator: Simulator
 
     def __init__(self, shared_core: SharedCore) -> None:
         self.shared_core = shared_core
         self.__ui_controller = UIController(self.shared_core)
+        self.__simulator = Simulator(self.shared_core, self.__ui_controller)
+        self.__simulator.start()
 
         # Construct the `Scheduler`
         self.__scheduler = Scheduler()
@@ -21,7 +25,11 @@ class SceneMode:
             self.__scheduler.get(
                 "LineHawkInternalPrepareUI", 
                 PREPARE_UI_TABLE,
-                PrepareUI(self.__ui_controller, self.shared_core)
+                PrepareUI(
+                    self.__ui_controller,
+                    self.shared_core,
+                    self.__simulator
+                )
             )
         )
 
@@ -66,6 +74,7 @@ class SceneMode:
             self.perform_event(event)
 
         # Update the UI:
+        self.__simulator.tick()
         self.__scheduler.tick()
         self.__ui_controller.tick()
         return self
@@ -74,6 +83,7 @@ class SceneMode:
         self.shared_core.graphics_service.window.surface.fill((0, 0, 0))
 
         # Draw the UI:
+        self.__simulator.draw()
         self.__ui_controller.draw()
 
         # Draw the Services:

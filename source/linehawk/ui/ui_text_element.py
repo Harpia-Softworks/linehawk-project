@@ -15,15 +15,6 @@ class UITextElement(UIElement):
     ) -> None:
         super().__init__(type, parent, **kwargs)
 
-    # set and get:
-    def set_text(self, new: str) -> typing.Self:
-        self._need_regeneration = True
-        self._text = new
-        return self
-
-    def get_text(self) -> str:
-        return self._text
-
     def _internal_regeneration(self) -> typing.Self:
         # Load the `UITheme`:
         using_theme: UITheme = self.get_theme()

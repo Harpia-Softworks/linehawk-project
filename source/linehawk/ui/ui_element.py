@@ -256,6 +256,15 @@ class UIElement:
             self._children[key].tick()
         return self
 
+    # set and get:
+    def set_text(self, new: str) -> typing.Self:
+        self._need_regeneration = True
+        self._text = new
+        return self
+
+    def get_text(self) -> str:
+        return self._text
+
     # Draw:
     def _internal_draw(self) -> typing.Self:
         render_at: pygame.Vector2 = self._position.calculate(
