@@ -11,7 +11,7 @@ class LanguageService(BaseService):
         self.__warehouse_service = warehouse_service
         self.__current_language = "Default"
 
-    def format(self, text: str) -> typing.Optional[str]:
+    def format(self, text: str) -> str:
         accumulator: str = str()
         index: int = 0
         while index < len(text): 
@@ -25,32 +25,26 @@ class LanguageService(BaseService):
                     if s_current_char == '§':
                         break
                     key += s_current_char
-                key_content: typing.Optional[str] = self.__get_key(key)
-                if key_content:
-                    accumulator += key_content
-                else:
-                    # NOTE: we are NOT ready:
-                    return None
+                # Get the `key_content` and continue.
+                key_content: str = self.__get_key(key)
+                accumulator += key_content
+
+                # Continue from the subindex.
                 index = subindex
             else:
                 accumulator += current_char
                 index += 1
         return accumulator
     
-    def __get_key(self, key: str) -> typing.Optional[str]:
-        maybe_data = (
+    def __get_key(self, key: str) -> str:
+        language_pack = (
             self
                 .__warehouse_service
-                .get_json(
+                .load_json(
                     ("root:Language/" + self.__current_language + ".json")
                 )
         )
-        if maybe_data.is_present():
-            data = maybe_data.get().get_json()
-            data_section = data.get("data", None)
-            if data_section:
-                return data_section.get(key, "???")
-        else:
-            # NOTE: in this, the implication is that the file is still loading.
-            return None
+        data_section = language_pack.get("data", None)
+        if data_section:
+            return data_section.get(key, "???")
         return "???"

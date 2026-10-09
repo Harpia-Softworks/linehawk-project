@@ -12,6 +12,7 @@ class SceneMode:
     __scheduler: Scheduler
     __ui_controller: UIController
     __simulator: Simulator
+    __gui_display: GUIDisplay
 
     def __init__(self, shared_core: SharedCore) -> None:
         self.shared_core = shared_core
@@ -77,6 +78,7 @@ class SceneMode:
         self.__simulator.tick()
         self.__scheduler.tick()
         self.__ui_controller.tick()
+
         return self
 
     def draw(self) -> SceneMode:

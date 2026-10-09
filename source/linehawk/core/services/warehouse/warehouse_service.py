@@ -1,13 +1,13 @@
 from linehawk.core.services.graphics.graphics_service import GraphicsService
 from linehawk.core.services.base_service import BaseService
 from linehawk.core.services.warehouse.warehouse_cache import *
-from linehawk.core.services.warehouse.warehouse_promise import *
+from linehawk.linehawk_error import LineHawkError
 
 import typing
 import json
-import os
+import enum
 
-class WarehouseServiceError(BaseException):
+class WarehouseServiceError(LineHawkError):
     message: str
     def __init__(self, message: str) -> None:
         self.message = message
@@ -36,38 +36,16 @@ class WarehouseServiceNoPackageFoundError(WarehouseServiceError):
     def __init__(self, name: str) -> None:
         self.name = name
         super().__init__(f'No package found: {self.name}')
-
-class _WarehouseRequest:
-    type: WarehouseCacheType
-    site: str
-
-    def __init__(self, type: WarehouseCacheType, site: str) -> None:
-        self.type = type
-        self.site = site
-
-class _WarehouseRequestStatus:
-    since_tick: int
-    def __init__(self, current_tick: int) -> None:
-        self.since_tick = current_tick
-
 class WarehouseService(BaseService):
     """Contains loaded surfaces and more."""
-
-    class WarehouseServiceKwargs(typing.TypedDict):
-        load_quota: typing.NotRequired[int]
 
     __graphics_service: GraphicsService
     __package: typing.Dict[str, str]
     __cached: typing.Dict[str, WarehouseCache]
 
-    __requested: typing.List[_WarehouseRequest]
-    __quota: int
-    __busy: typing.Dict[str, _WarehouseRequestStatus]
-
     def __init__(
             self,
-            graphics_service: GraphicsService,
-            **kwargs: typing.Unpack[WarehouseServiceKwargs]
+            graphics_service: GraphicsService
     ) -> None:
         super().__init__("WarehouseService")
         # Reference to the `GraphicsService`
@@ -77,10 +55,9 @@ class WarehouseService(BaseService):
         self.__package = dict()
         self.__cached = dict()
 
-        # Request System:
-        self.__requested = list()
-        self.__quota = kwargs.get("load_quota", 5)
-        self.__busy = dict()
+    # xxxxxxxxxxxxxxxx
+    # Register Package
+    # xxxxxxxxxxxxxxxx
 
     def register_package(
             self,
@@ -97,64 +74,18 @@ class WarehouseService(BaseService):
             raise WarehouseServiceNoPackageFoundError(name)
         return self.__package[name]
 
-    def get_font(
-            self,
-            key: str,
-            size: int
-    ) -> WarehousePromise:
-        full_key: str = (key + "$" + str(size))
-        key_name: str = full_key + "@font"
-        if key_name in self.__cached:
-            return WarehousePromise(True, full_key, self.__cached[key_name])
-        else:
-            if not key_name in self.__busy:
-                # Push this content on the `self.__busy`:
-                self.__busy[key_name] = _WarehouseRequestStatus(0)
-                self.__requested.append(
-                    _WarehouseRequest(WarehouseCacheType.FONT, full_key)
-                )
-            return WarehousePromise(False, full_key, None)
+    # xxxxxxxxx
+    # Load Font
+    # xxxxxxxxx
 
-    def get_image(
+    def __load_font(
             self,
-            key: str
-    ) -> WarehousePromise:
-        key_name: str = key + "@image"
-        if key_name in self.__cached:
-            return WarehousePromise(True, key, self.__cached[key_name])
-        else:
-            if not key_name in self.__busy:
-                self.__busy[key_name] = _WarehouseRequestStatus(0)
-                self.__requested.append(
-                    _WarehouseRequest(WarehouseCacheType.IMAGE, key)
-                )
-            return WarehousePromise(False, key, None)
-
-    def get_json(
-            self,
-            key: str
-    ) -> WarehousePromise:
-        key_name: str = key + "@json"
-        if key_name in self.__cached:
-            return WarehousePromise(True, key, self.__cached[key_name])
-        else:
-            if not key_name in self.__busy:
-                # TODO: add timing for the _WarehouseRequestStatus!
-                self.__busy[key_name] = _WarehouseRequestStatus(0)
-                self.__requested.append(
-                    _WarehouseRequest(WarehouseCacheType.JSON, key)
-                )
-            return WarehousePromise(False, key, None)
-
-    # Tick:
-    def __process_font(self, site: str) -> WarehouseCache:
-        # Expected Format:
-        #   root:Path/To/Font.ttf$n, where n is the `size`
+            site: str
+    ) -> WarehouseCache:
+        # Expected Format: root:Path/To/Font.ttf$n, where n is the `size`
         site_split: typing.List[str] = site.split(":")
         if len(site_split) != 2:
             raise WarehouseServiceBadSiteError(site)
-
-        # Anything, we continue loading:
         from_package: str = self.get_package(site_split[0])
 
         # DS: Direction (the file) and Size (The size of the font):
@@ -162,56 +93,93 @@ class WarehouseService(BaseService):
         ds_split: typing.List[str] = ds.split("$")
         if len(ds_split) != 2:
             raise WarehouseServiceBadFontSiteError(site)
-        
         direction: str = ds_split[0]
-        size: int
-        try:            size = int(ds_split[1])
+        font_size: int
+        try:            font_size = int(ds_split[1])
         except:         raise WarehouseServiceBadFontSiteError(site)
 
         # Finally, load:
         font: pygame.font.Font = pygame.font.Font(
             (from_package + direction),
-            size
+            font_size
         )
         return WarehouseCache(WarehouseCacheType.FONT, font)
 
-    def __process_json(self, site: str) -> WarehouseCache:
+    def get_font(
+            self,
+            site: str
+    ) -> pygame.Font:
+        cache_key: str = f'{site}@font'
+        if cache_key in self.__cached:
+            return self.__cached[cache_key].get_font()
+        else:
+            acquired_cache: WarehouseCache = self.__load_font(site)
+            self.__cached[cache_key] = acquired_cache
+            return acquired_cache.get_font()
+
+    # xxxxxxxxxx
+    # Load Image
+    # xxxxxxxxxx
+
+    def __load_image(
+            self,
+            site: str
+    ) -> WarehouseCache:
+        site_split: typing.List[str] = site.split(":")
+        if len(site_split) != 2:
+            raise WarehouseServiceBadSiteError(site)
+        from_package: str = self.get_package(site_split[0])
+        # NOTE: load the image.
+        loaded_image: pygame.Surface = pygame.image.load(
+            (from_package + site_split[1])
+        )
+        return WarehouseCache(WarehouseCacheType.IMAGE, loaded_image)
+
+    def load_image(
+            self,
+            site: str
+    ) -> pygame.Surface:
+        cache_key: str = f'{site}@image'
+        if cache_key in self.__cached:
+            return self.__cached[cache_key].get_image()
+        else:
+            acquired_cache: WarehouseCache = self.__load_image(site)
+            self.__cached[cache_key] = acquired_cache
+            return acquired_cache.get_image()
+
+    # xxxxxxxxx
+    # Load JSON
+    # xxxxxxxxx
+
+    def __load_json(
+            self,
+            site: str
+    ) -> WarehouseCache:
         site_split: typing.List[str] = site.split(":")
         if len(site_split) != 2: 
             raise WarehouseServiceBadSiteError(site)
         from_package: str = self.get_package(site_split[0])
         direction: str = site_split[1]
 
-        # TODO: Do better here, we can stall more.
+        # Open the File:
         fp = open(from_package + direction, "rb")
         parsed_data = json.load(fp)
         fp.close()
 
         # Return the cache, finally...
-        return WarehouseCache(WarehouseCacheType.JSON, parsed_data)
+        return WarehouseCache(WarehouseCacheType.JSON, parsed_data)        
 
-    def __process(self, request: _WarehouseRequest) -> None:
-        cache: typing.Optional[WarehouseCache] = None
-        match request.type:
-            case WarehouseCacheType.EMPTY:
-                return
-            case WarehouseCacheType.FONT:
-                cache = self.__process_font(request.site)
-            case WarehouseCacheType.JSON:
-                cache = self.__process_json(request.site)
-            case _:
-                pass
-        # NOTE: Finish by adding it on the `cache`.
-        if cache:
-            self.__cached[request.site + "@" + cache.get_tag()] = cache
-
-    def __step_assembly_line(self) -> None:
-        for _ in range(0, self.__quota):
-            if len(self.__requested) > 0:
-                emerge: _WarehouseRequest = self.__requested.pop(0)
-                self.__process(emerge)
-            else:
-                break
+    def load_json(
+            self,
+            site: str
+    ) -> typing.Dict[str, typing.Any]:
+        cache_key: str = f'{site}@json'
+        if cache_key in self.__cached:
+            return self.__cached[cache_key].get_json()
+        else:
+            acquired_cache: WarehouseCache = self.__load_json(site)
+            self.__cached[cache_key] = acquired_cache
+            return acquired_cache.get_json()
 
     def tick(self) -> None:
-        self.__step_assembly_line()
+        pass
