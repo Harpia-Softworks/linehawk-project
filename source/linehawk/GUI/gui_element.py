@@ -11,8 +11,7 @@ class _GUIElementValidKeywordsHalf(typing.TypedDict):
     name: typing.NotRequired[str]
 
 class GUIElementValidKeywords(
-    GUIObjectValidKeywords,
-    _GUIElementValidKeywordsHalf
+    GUIObjectValidKeywords, _GUIElementValidKeywordsHalf
 ): pass
 
 class ChildNotFoundError(GUIError):
@@ -36,50 +35,22 @@ class GUIElement(GUIObject):
     and even GUIFrame, which contains other elements inside. Every `GUIElement`
     can contain other elements inside, even `GUITextLabel`.
     """
-
-    # Public:
     name:               typing.Optional[str]
-
-    # Restricted:
-    __surface: pygame.Surface
-    __root: GUIElement
-    __parent: GUIElement
-    __children: typing.Dict[str, GUIElement]
+    __root:             GUIElement
+    __parent:           GUIElement
+    _children:          typing.Dict[str, GUIElement]
 
     def __init__(
             self,
             type: GUIElementType,
-            parent: typing.Optional[GUIElement],
+            parent: GUIElement,
             **kwargs: typing.Unpack[GUIElementValidKeywords]
     ) -> None:
-        # Initialize the Super-Class (GUIObject):
         super().__init__(type, **kwargs)
-
-        # Initialize Variables:
-        self.__children = dict()
-
-        # `GUIElement` properties:
-        self.name = kwargs.get("name")
-
-        if parent:
-            self.__parent = parent
-            self.__root = self.get_parent().get_root()
-
-            # Initialize the `Surface` here:
-            self.__surface = pygame.Surface(
-                self
-                    .size
-                    .calculate(
-                        self
-                            .get_parent()
-                            .get_surface()
-                    ),
-                flags=pygame.SRCALPHA
-            )
-        else:
-            # Skip the initialization, because we don't have a parent to be
-            # referenced to.
-            pass
+        self._children     = dict()
+        self.name           = kwargs.get("name")
+        self.__parent       = parent
+        self.__root         = self.get_parent().get_root()
 
     def query(self, path: str, sep: str = '.') -> GUIElement:
         """
@@ -95,14 +66,18 @@ class GUIElement(GUIObject):
             current_element = current_element.get_child(child_name)
         return current_element
 
+    def add_child(self, name: str, child: GUIElement) -> typing.Self:
+        self._children[name] = child
+        return self
+
     def get_child(self, name: str) -> GUIElement:
         """
         In this element, get an `child` from it.
         ---
         @note You should **NOT** overwrite this function.
         """
-        if name in self.__children:
-            return self.__children[name]
+        if name in self._children:
+            return self._children[name]
         else:
             raise ChildNotFoundError(name)
 
@@ -117,7 +92,7 @@ class GUIElement(GUIObject):
         raise NotImplementedError(
             "This function should have been implemented by GUIDisplay"
         )
-
+        
     # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     # root, parent and surface (drawing) and logistics
     # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -139,12 +114,6 @@ class GUIElement(GUIObject):
         will not return itself because it is the *TOP* of the hierachy.
         """
         return self.__parent
-
-    def get_surface(self) -> pygame.Surface:
-        """
-        Return the `pygame.Surface` used by the `GUIElement`.
-        """
-        return self.__surface
 
     # xxxxxxxxxxxx
     # == Redraw ==
@@ -182,8 +151,7 @@ class GUIElement(GUIObject):
         `GUIDisplay` and `GUIFrame`, because `GUIFrame` is always drawing and
         cleaning, what is called `busy element`.
         """
-        self.unmark_redraw()
-        return self
+        return self.unmark_redraw()
 
     # xxxxxxxxxxxxxxxx
     # == Tick Epoch ==
@@ -204,9 +172,8 @@ class GUIElement(GUIObject):
         self._specific_tick()
         if self._need_redraw:
             self._redraw()
-
         # After _redraw(), do the tick:
-        for child in self.__children.values():
+        for child in self._children.values():
             child.tick()
         return self
 
@@ -214,77 +181,47 @@ class GUIElement(GUIObject):
     # == Draw Epoch ==
     # xxxxxxxxxxxxxxxx
 
-    def _specific_draw(self) -> typing.Self:
+    def _specific_draw(
+            self,
+            surface: pygame.Surface,
+            box: pygame.Rect,
+            depth: int
+    ) -> typing.Self:
         return self
-
-    def __clean_surface(self) -> typing.Self:
-        """
-        Clean the surface to draw the other elements.
-        """
-        self.get_surface().fill(
-            self
-                .get_root()
-                .get_theme()
-                .get(self.use_style)
-                .background_color
-        )
-        return self
-
-    def _deploy_to_parent_surface(self) -> typing.Self:
-        """
-        To deploy to parent surface is, to take the `self.__surface` and blit
-        on the `self.__parent().get_surface().blit(self.__surface, __position)`
-        this is, in last, to transfer the element to the parent. This is done,
-        of course after **ALL** the child elements have draw on `this` surface.
-
-        @note You might replace this `method` on `GUIDisplay`.
-        """
-        final_position: pygame.Vector2 = (
-            self
-                .position
-                .calculate(
-                    self
-                        .get_surface()
-                )
-        )
-        final_position.x -= (self.get_surface().get_width() * self.pivot.x)
-        final_position.y -= (self.get_surface().get_height() * self.pivot.y)
-
-        # NOTE: Here is why this function needs to be removed from the
-        # `GUIDisplay`, because `self.get_parent()` in `GUIDisplay` already 
-        # return itself, and chained with `self.get_surface()`, it will return
-        # the `self.__render_to` `pygame.Surface`, but you see,
-        # `self.get_surface()` already returns the `self.__render_to` surface,
-        # so it is like, we are drawing `X` on `X`, which makes no sense! So,
-        # this function can be replaced on `GUIDisplay`, where
-        # `self.get_surface()` and `self.get_parent().get_surface()` is equal.
-        (
-            self
-                .get_parent()
-                .get_surface()
-                .blit(
-                    self.get_surface(),
-                    final_position
-                )
-        )
-        return self
-
-    def draw(self) -> typing.Self:
-        """
-        Draw the internal elements of the `GUIElement`.
-        ---
-
-        * @warning DO NOT replace this function, just like `tick()`, you have 
-        the *protected* method called `_specific_draw()` you can overwrite to 
-        perform specific actions!
-        """
-        # Start by cleaning the surface:
-        self.__clean_surface()
-        self._specific_draw()
+    
+    def draw(
+            self,
+            surface: pygame.Surface,
+            box: pygame.Rect,
+            depth: int = 0
+    ) -> typing.Self:
+        # Can we draw?
+        if not self._visible:
+            return self
         
-        for child in self.__children.values():
-            child.draw()
+        # Calculate the Initial Position on the Screen:
+        reference_position: pygame.Vector2 = pygame.Vector2(
+            box.x + box.w * self._position.x_scale + self._position.x_offset,
+            box.y + box.h * self._position.y_scale + self._position.y_offset
+        )
 
-        # Finish by `deploying` to parent surface:
-        self._deploy_to_parent_surface()
+        # Calculate the Size of the Object:
+        object_size: pygame.Vector2 = pygame.Vector2(
+            box.w * self._size.x_scale + self._size.x_offset,
+            box.h * self._size.y_scale + self._size.y_offset
+        )
+
+        # Finally, merge the position and the pivot point.
+        object_position: pygame.Vector2 = pygame.Vector2(
+            reference_position.x - (object_size.x * self._pivot.x),
+            reference_position.y - (object_size.y * self._pivot.y)
+        )
+
+        # Create `This` object box.
+        object_box: pygame.Rect = pygame.Rect(object_position, object_size)
+        self._specific_draw(surface, object_box, depth)
+        
+        # Draw the child inside this box.
+        for child in self._children.values():
+            child.draw(surface, object_box, depth=depth + 1)
         return self

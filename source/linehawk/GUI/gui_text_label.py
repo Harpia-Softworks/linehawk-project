@@ -1,24 +1,12 @@
-from linehawk.GUI.gui_element import *
-from linehawk.GUI.gui_enums import *
+from .gui_element import *
+from .gui_enums import *
+from .gui_text_element import GUITextElement
 import typing
 
-class GUITextLabel(GUIElement):
-    """
-    `GUITextElement` contains basic methods for `GUITextButton` and
-    `GUITextLabel` and more elements.
-    """
-    _rendered_text: pygame.Surface
-    
+class GUITextLabel(GUITextElement):
     def __init__(
             self,
-            type: GUIElementType,
             parent: GUIElement,
             **kwargs: typing.Unpack[GUIElementValidKeywords]
     ) -> None:
-        super().__init__(type, parent, **kwargs)
-
-    def _update_rendered_text(self):
-        """
-        Update the `self._rendered_text` to contain new text.
-        """
-        pass
+        super().__init__(GUIElementType.TEXT_LABEL, parent, **kwargs)

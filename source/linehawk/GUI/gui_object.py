@@ -9,21 +9,22 @@ class GUIObjectValidKeywords(typing.TypedDict):
     pivot:          typing.NotRequired[pygame.Vector2]
     use_style:      typing.NotRequired[str]
     text:           typing.NotRequired[str]
+    visible:        typing.NotRequired[bool]
 
 class GUIObject:
     # Control (internal):
     _need_redraw:       bool
-    _surface:           pygame.Surface
     _type:              GUIElementType
     
     # Appearance:
-    position:           GUIDim
-    size:               GUIDim
-    pivot:              pygame.Vector2
-    use_style:          str
+    _position:          GUIDim
+    _size:              GUIDim
+    _pivot:             pygame.Vector2
+    _use_style:         str
+    _visible:           bool
 
     # Specific GUIObject Properties:
-    text:               str
+    _text:               str
 
     def __init__(
             self,
@@ -34,12 +35,20 @@ class GUIObject:
         self._type = type
 
         # Define the position, size and other elemental properties:
-        self.position               = kwargs.get("position", GUIDim())
-        self.size                   = kwargs.get("size", GUIDim())
-        self.pivot                  = kwargs.get("pivot", pygame.Vector2(0, 0))
-        self.use_style              = kwargs.get("use_style", str("default"))
-        self.text                   = kwargs.get("text", str("N/A"))
+        self._position              = kwargs.get("position", GUIDim())
+        self._size                  = kwargs.get("size", GUIDim())
+        self._pivot                 = kwargs.get("pivot", pygame.Vector2(0, 0))
+        self._use_style             = kwargs.get("use_style", str("default"))
+        self._text                  = kwargs.get("text", str("N/A"))
+        self._visible               = kwargs.get("visible", True)
         
         # All objects start with the need to redraw:
         self._need_redraw           = True
-        self._surface               = pygame.Surface((0, 0))
+
+    def set_text(self, new: str) -> typing.Self:
+        self._text = new
+        self._need_redraw = True
+        return self
+
+    def get_text(self) -> str:
+        return self._text

@@ -1,24 +1,17 @@
-from linehawk.ui.ui_display import UIDisplay
-from linehawk.ui.ui_frame import UIFrame
-from linehawk.ui.ui_text_label import UITextLabel
-from linehawk.ui.ui_text_button import UITextButton
-from linehawk.ui.ui_theme import UITheme
-from linehawk.ui.ui_style import UIStyle
-from linehawk.ui.ui_element import UIElement
-from linehawk.ui.ui_dim import UIDim
+from linehawk.GUI.gui_text_label import GUITextLabel
+from linehawk.GUI.gui_text_button import GUITextButton
+from linehawk.GUI.gui_frame import GUIFrame
+from linehawk.GUI.gui_display import GUIDisplay
+from linehawk.GUI.gui_element import GUIElement
+from linehawk.GUI.gui_dim import GUIDim
+from linehawk.GUI.gui_style import GUIStyle
+from linehawk.GUI.gui_theme import GUITheme
+
 from linehawk.core.shared_core import SharedCore
-from linehawk.core.services.warehouse.warehouse_promise import WarehousePromise
 from linehawk.linehawk_error import LineHawkError
 
 import typing
 import pygame
-
-class _UIControllerLoadRequest:
-    site: str
-    name: str
-    def __init__(self, site: str, name: str) -> None:
-        self.site = site
-        self.name = name
 
 class UIControllerError(LineHawkError):
     def __init__(self, *args: object) -> None:
@@ -55,8 +48,7 @@ class UIControllerNoDisplayFoundError(UIControllerError):
         super().__init__(f'No display named: {self.bad_name}')
 
 class UIController:
-    __displays: typing.Dict[str, UIDisplay]
-    __requests: typing.List[_UIControllerLoadRequest]
+    __displays: typing.Dict[str, GUIDisplay]
     __shared_core: SharedCore
     __output_surface: pygame.Surface
 
@@ -117,7 +109,7 @@ class UIController:
     def __element_property_load_ui_dim(
             self,
             raw: typing.Any
-    ) -> UIDim:
+    ) -> GUIDim:
         if isinstance(raw, list):
             raw = typing.cast(typing.List[typing.Union[int, float]], raw)
             if len(raw) != 4:
@@ -126,7 +118,7 @@ class UIController:
                     "Expected UIDim"
                 )
             else:
-                return UIDim(raw[0], raw[1], raw[2], raw[3])
+                return GUIDim(raw[0], raw[1], raw[2], raw[3])
         else:
             raise UIControllerElementPropertyConverterError(
                 raw,
@@ -178,7 +170,6 @@ class UIController:
 
     def __init__(self, shared_core: SharedCore) -> None:
         self.__displays = dict()
-        self.__requests = list()
         self.__shared_core = shared_core
 
         # Generate the top surface:
@@ -187,9 +178,10 @@ class UIController:
                 .__shared_core
                 .graphics_service
                 .window
-                .surface
-                .get_size()
-        ).convert_alpha()
+                .get_surface()
+                .get_size(),
+            flags=pygame.SRCALPHA
+        )
 
         # Load Conversion Tables:
         self.__style_field_conversion_table = {
@@ -207,44 +199,32 @@ class UIController:
             'visible': self.__element_property_load_bool
         }
 
-    def load(self, site: str, name: str) -> typing.Self:
-        # Begin the construction, we first need the content:
-        self.__requests.append(_UIControllerLoadRequest(site, name))
-        return self
-
     def __build_style(
             self,
             field: typing.Dict[str, typing.Any]
-    ) -> UIStyle:
+    ) -> GUIStyle:
         valid_entries: typing.Dict[str, typing.Any] = dict()
         for key in field:
             if key in self.__style_field_conversion_table:
                 valid_entries[key] = (
                     self.__style_field_conversion_table[key](field[key])
                 )
-        return UIStyle(**valid_entries)
+        return GUIStyle(**valid_entries)
 
     def __build_theme(
             self,
             theme_site: str
-    ) -> typing.Optional[UITheme]:
+    ) -> GUITheme:
         # Again, either our theme will be already there on the cache or not,
         # since everything is a promise from the `warehouse`, we can't rely
         # on always getting things nicely.
-        maybe_theme_recipe: WarehousePromise = (
-            self.__shared_core.warehouse_service.get_json(theme_site)
+        theme_recipe: typing.Dict [str, typing.Any] = (
+            self
+                .__shared_core
+                .warehouse_service
+                .load_json(theme_site)
         )
-        if not maybe_theme_recipe.is_present():
-            return None
-
-        # When present, we unpack the content to the **kwargs:
-        theme_recipe: typing.Dict[str, typing.Any] = (
-            maybe_theme_recipe
-                .get()
-                .get_json()
-        )
-
-        generated_theme: UITheme = UITheme(
+        generated_theme: GUITheme = GUITheme(
             self.__shared_core.warehouse_service,
             self.__shared_core.language_service
         )
@@ -258,36 +238,26 @@ class UIController:
 
     def __construct(
             self,
-            request: _UIControllerLoadRequest
-    ) -> typing.Optional[UIDisplay]:
-        maybe_recipe: WarehousePromise = (
+            site: str
+    ) -> GUIDisplay:
+        # Recipe loaded, we can start to build the content:
+        recipe: typing.Dict[str, typing.Any] = (
             self
                 .__shared_core
                 .warehouse_service
-                .get_json(request.site)
+                .load_json(site)
         )
-
-        # Then, we can't really build the UI:
-        if not maybe_recipe.is_present():
-            return None
-
-        # Recipe loaded, we can start to build the content:
-        recipe = maybe_recipe.get().get_json()
         if not "theme" in recipe:
-            raise UIControllerRecipeFileLacksThemeError(request.site)
+            raise UIControllerRecipeFileLacksThemeError(site)
 
         # Load the `Theme`:
         use_theme: str = recipe["theme"]
-        maybe_theme: typing.Optional[UITheme] = self.__build_theme(use_theme)
-
-        # Not loaded the theme? Can't have it.
-        if not maybe_theme:
-            return None
+        maybe_theme: typing.Optional[GUITheme] = self.__build_theme(use_theme)
 
         # The construction is done using recursion, which is easy.
         def build(
                 element_recipe: typing.Dict[str, typing.Any],
-                parent: UIElement
+                parent: GUIElement
         ) -> None:
             # Contains the type and the name:
             element_type: str = element_recipe["type"]
@@ -310,14 +280,14 @@ class UIController:
                     )
 
             # Construct the element:
-            element: UIElement
+            element: GUIElement
             match element_type:
                 case "frame":
-                    element = UIFrame(parent, **valid_properties)
+                    element = GUIFrame(parent, **valid_properties)
                 case "text_label":
-                    element = UITextLabel(parent, **valid_properties)
+                    element = GUITextLabel(parent, **valid_properties)
                 case "text_button":
-                    element = UITextButton(parent, **valid_properties)
+                    element = GUITextButton(parent, **valid_properties)
                 case _:
                     raise UIControllerNoUIElementOfTypeError(element_type)
             parent.add_child(element_name, element)
@@ -330,18 +300,27 @@ class UIController:
                 build(inside_recipe, element)
 
         # Build for the `display`:
-        base_display: UIDisplay = UIDisplay(self.__output_surface, maybe_theme)
-        build(typing.cast(typing.Dict[str, typing.Any], recipe["root"]), base_display)
+        base_display: GUIDisplay = GUIDisplay(
+            self.__output_surface,
+            maybe_theme
+        )
+        build(
+            typing.cast(
+                typing.Dict[str, typing.Any],
+                recipe["root"]
+            ),
+            base_display
+        )
         return base_display
 
-    def get(self, name: str) -> typing.Optional[UIDisplay]:
+    def get(self, name: str) -> typing.Optional[GUIDisplay]:
         """
         The `.get` is used to test if the display is present, for direct error,
         you should try: `.with_display()`
         """
         return self.__displays.get(name)
 
-    def with_display(self, name: str) -> UIDisplay:
+    def with_display(self, name: str) -> GUIDisplay:
         """
         This way of querying a display will result in a crash when the name
         is not found!
@@ -351,26 +330,12 @@ class UIController:
         else:
             raise UIControllerNoDisplayFoundError(name)
 
+    def load(self, site: str, name: str) -> typing.Self:
+        # Begin the construction, we first need the content:
+        self.__displays[name] = self.__construct(site)
+        return self
+
     def tick(self) -> typing.Self:
-        quota: int = len(self.__requests)
-        for _ in range(0, quota):
-            # Do we have something to build?
-            if len(self.__requests) <= 0:
-                break
-
-            # Pop from the Queue:
-            request: _UIControllerLoadRequest = self.__requests.pop(0)
-            maybe_display: typing.Optional[UIDisplay] = self.__construct(
-                request
-            )
-
-            # NOTE: Some scenarios, the loading might yield, so we don't do
-            # anything.
-            if maybe_display is None:
-                self.__requests.append(request)
-            else:
-                self.__displays[request.name] = maybe_display
-
         # Post-Build:
         # TODO: sort the display(s) here:
         for name in self.__displays:
@@ -387,31 +352,7 @@ class UIController:
                 .__shared_core
                 .graphics_service
                 .window
-                .surface
+                .get_surface()
                 .blit(self.__output_surface, (0, 0))
         )
         return self
-    
-    # Events:
-    def game_viewport_resize(self, new_size: pygame.Vector2) -> None:
-        # Sets everything to be spawned again.
-        new_ui_viewport: pygame.Surface = (
-            pygame
-                .Surface(new_size)
-                .convert_alpha()
-        )
-        for display in self.__displays:
-            (
-                self.__displays[display]
-                .switch_display_surface(new_ui_viewport)
-                .reload()
-            )
-        self.__output_surface = new_ui_viewport
-
-    def mouse_down(self) -> None:
-        # Pass forward:
-        for display in self.__displays:
-            (
-                self.__displays[display]
-                .handle_click()
-            )

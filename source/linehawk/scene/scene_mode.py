@@ -12,7 +12,6 @@ class SceneMode:
     __scheduler: Scheduler
     __ui_controller: UIController
     __simulator: Simulator
-    __gui_display: GUIDisplay
 
     def __init__(self, shared_core: SharedCore) -> None:
         self.shared_core = shared_core
@@ -38,26 +37,6 @@ class SceneMode:
         match event.type:
             case pygame.QUIT:
                 self.shared_core.runtime_service.running = False
-            case pygame.VIDEORESIZE:
-                (
-                    self
-                        .shared_core
-                        .graphics_service
-                        .window
-                        .at_resize(event.size)
-                )
-                (
-                    self
-                        .__ui_controller
-                        .game_viewport_resize(pygame.Vector2(event.size))
-                )
-            # NOTE: Those are `UI events`.
-            case pygame.MOUSEBUTTONDOWN:
-                (
-                    self
-                        .__ui_controller
-                        .mouse_down()
-                )
             case pygame.MOUSEBUTTONUP:
                 pass
             case _:
@@ -82,7 +61,14 @@ class SceneMode:
         return self
 
     def draw(self) -> SceneMode:
-        self.shared_core.graphics_service.window.surface.fill((0, 0, 0))
+        (
+            self
+                .shared_core
+                .graphics_service
+                .window
+                .get_surface()
+                .fill((0, 0, 0, 255))
+        )
 
         # Draw the UI:
         self.__simulator.draw()
@@ -93,5 +79,11 @@ class SceneMode:
         self.shared_core.graphics_service.draw()
         self.shared_core.warehouse_service.draw()
 
-        pygame.display.update()
+        (
+            self
+                .shared_core
+                .graphics_service
+                .window
+                .deploy_surface()
+        )
         return self

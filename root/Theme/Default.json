@@ -9,7 +9,7 @@
 
         "container.ShowLeftBarButton":
         {
-            "background_color": [255, 207, 182, 255],
+            "background_color": [250, 128, 114, 255],
             "foreground_color": [25, 25, 25, 0],
             "font": "root:Fonts/System/Default.ttf",
             "font_size": 12
@@ -17,35 +17,51 @@
 
         "container.LeftBar":
         {
-            "background_color": [193, 255, 182, 255]
+            "background_color": [100, 100, 100, 255]
         },
 
         "container.LeftBar.TitleBox":
         {
-            "background_color": [182, 230, 255, 255]
+            "background_color": [100, 100, 100, 255]
         },
 
         "container.LeftBar.OptionsBox":
         {
-            "background_color": [255,207,182, 255]
+            "background_color": [100, 100, 100, 255]
         },
 
         "container.LeftBar.ActionBox":
         {
-            "background_color": [255, 182, 193, 255]
+            "background_color": [100, 100, 100, 255]
+        },
+
+        "container.LeftBar.CounterText":
+        {
+            "background_color": [128, 114, 250, 255],
+            "foreground_color": [50, 50, 50, 255],
+            "font": "root:Fonts/System/Default.ttf",
+            "font_size": 12
+        },
+
+        "container.LeftBar.ApproxView":
+        {
+            "background_color": [162, 114, 250, 255],
+            "foreground_color": [50, 50, 50, 255],
+            "font": "root:Fonts/System/Default.ttf",
+            "font_size": 12
         },
 
         "container.LeftBar.ActionBox.StartButton":
         {
-            "background_color": [182, 255, 207, 255],
-            "foreground_color": [25, 25, 25, 0],
+            "background_color": [114, 250, 196, 255],
             "font": "root:Fonts/System/Default.ttf",
+            "foreground_color": [25, 25, 25, 0],
             "font_size": 12
         },
 
         "container.LeftBar.ActionBox.HideLeftBarButton":
         {
-            "background_color": [207, 182, 255, 255],
+            "background_color": [250, 128, 114, 255],
             "foreground_color": [25, 25, 25, 0],
             "font": "root:Fonts/System/Default.ttf",
             "font_size": 12
@@ -53,23 +69,23 @@
 
         "container.LeftBar.TitleBox.TextItem":
         {
-            "background_color": [0, 0, 0, 0],
-            "foreground_color": [25, 25, 25, 0],
+            "background_color": [100, 100, 100, 255],
+            "foreground_color": [255, 255, 255, 255],
             "font": "root:Fonts/System/Default.ttf",
             "font_size": 12
         },
 
         "container.CreatorsInformation":
         {
-            "background_color": [150, 150, 150, 150]
+            "background_color": [100, 100, 100, 255]
         },
 
         "container.CreatorsInformation.CopyrightText":
         {
-            "background_color": [0, 0, 0, 0],
-            "foreground_color": [25, 25, 25, 0],
+            "background_color": [100, 100, 100, 255],
+            "foreground_color": [255, 255, 255, 255],
             "font": "root:Fonts/System/Default.ttf",
-            "font_size": 10
+            "font_size": 12
         }
     }
 }

@@ -20,9 +20,19 @@ class GUIDim:
 
     def calculate(
             self,
-            surface: pygame.Surface
+            base: pygame.Vector2
     ) -> pygame.Vector2:
         return pygame.Vector2(
-            (surface.get_width() * self.x_scale) + self.x_offset,
-            (surface.get_height() * self.y_scale) + self.y_offset
+            (base.x * self.x_scale) + self.x_offset,
+            (base.y * self.y_scale) + self.y_offset
+        )
+
+    def calculate_xy(
+            self,
+            x: int,
+            y: int
+    ) -> pygame.Vector2:
+        return pygame.Vector2(
+            (x * self.x_scale) + self.x_offset,
+            (y * self.y_scale) + self.y_offset
         )

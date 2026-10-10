@@ -42,6 +42,7 @@ class WarehouseService(BaseService):
     __graphics_service: GraphicsService
     __package: typing.Dict[str, str]
     __cached: typing.Dict[str, WarehouseCache]
+    __invalid_texture: pygame.Surface
 
     def __init__(
             self,
@@ -54,6 +55,42 @@ class WarehouseService(BaseService):
         # The Cache System:
         self.__package = dict()
         self.__cached = dict()
+
+        # This is a `fake texture` defined when the game failed to generate
+        # an texture, or using as a mere placeholder.
+        INVALID_TEXTURE_WIDTH: int                              = 1024
+        INVALID_TEXTURE_HEIGHT: int                             = 1024
+        INVALID_TEXTURE_SUBSECTIONS_WIDTH: int                  = 32
+        INVALID_TEXTURE_SUBSECTIONS_HEIGHT: int                 = 32
+        self.__invalid_texture = pygame.Surface(
+            (INVALID_TEXTURE_WIDTH, INVALID_TEXTURE_HEIGHT),
+            flags=pygame.SRCALPHA
+        )
+        self.__invalid_texture.fill((0, 0, 0))
+        for yindex in range(
+            0,
+            (INVALID_TEXTURE_HEIGHT // INVALID_TEXTURE_SUBSECTIONS_HEIGHT) + 1
+        ):
+            for xindex in range(
+                0,
+                (INVALID_TEXTURE_WIDTH // INVALID_TEXTURE_SUBSECTIONS_WIDTH) + 1
+            ):
+                at: int = (
+                    (yindex * ((INVALID_TEXTURE_WIDTH // INVALID_TEXTURE_SUBSECTIONS_WIDTH) + 1)) + 
+                    xindex
+                )
+                if at % 2 == 0:
+                    continue
+                pygame.draw.rect(
+                    self.__invalid_texture,
+                    (255, 0, 255),
+                    (
+                        xindex * INVALID_TEXTURE_SUBSECTIONS_WIDTH,
+                        yindex * INVALID_TEXTURE_SUBSECTIONS_HEIGHT,
+                        INVALID_TEXTURE_SUBSECTIONS_WIDTH,
+                        INVALID_TEXTURE_SUBSECTIONS_HEIGHT
+                    )
+                )
 
     # xxxxxxxxxxxxxxxx
     # Register Package
@@ -107,13 +144,14 @@ class WarehouseService(BaseService):
 
     def get_font(
             self,
-            site: str
+            site: str,
+            size: int
     ) -> pygame.Font:
-        cache_key: str = f'{site}@font'
+        cache_key: str = f'{site}${size}@font'
         if cache_key in self.__cached:
             return self.__cached[cache_key].get_font()
         else:
-            acquired_cache: WarehouseCache = self.__load_font(site)
+            acquired_cache: WarehouseCache = self.__load_font(f'{site}${size}')
             self.__cached[cache_key] = acquired_cache
             return acquired_cache.get_font()
 
@@ -180,6 +218,11 @@ class WarehouseService(BaseService):
             acquired_cache: WarehouseCache = self.__load_json(site)
             self.__cached[cache_key] = acquired_cache
             return acquired_cache.get_json()
+
+    def get_placeholder_texture(
+            self
+    ) -> pygame.Surface:
+        return self.__invalid_texture
 
     def tick(self) -> None:
         pass

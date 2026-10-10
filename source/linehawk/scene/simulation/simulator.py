@@ -40,7 +40,8 @@ class Simulator:
         self.__output_surface = pygame.Surface(
             shared_core
                 .graphics_service
-                .window.surface
+                .window
+                .get_surface()
                 .get_size()
         ).convert_alpha()
         self.__output_surface.fill((0, 0, 0, 0))
@@ -74,9 +75,7 @@ class Simulator:
         if (self.__counter % self.__threshold) == 0:
             self.__output_surface.blit(self.__blending_surface)
 
-        # Simulate the Buffon-Laplace Problem Here:
-
-        
+        # Simulate the Buffon-Laplace Problem Here:        
 
         # Draw an stick, our simulation requires this.
         pygame.draw.line(
@@ -102,7 +101,7 @@ class Simulator:
         if maybe_main:
             (
                 maybe_main
-                    .query("container.CreatorsInformation.CopyrightText")
+                    .query("container.LeftBar.CounterText")
                     .set_text("Counter: " + str(self.__counter))
             )
 
@@ -122,6 +121,6 @@ class Simulator:
                 .__shared_core
                 .graphics_service
                 .window
-                .surface
+                .get_surface()
                 .blit(self.__output_surface)
         )
