@@ -9,7 +9,8 @@ class Window:
 
     def __init__(self) -> None:
         #self.surface = pygame.display.set_mode((640, 480))
-        self.__window_surface = pygame.display.set_mode((800, 640))
+        #self.__window_surface = pygame.display.set_mode((800, 640))
+        self.__window_surface = pygame.display.set_mode((1280, 720))
         pygame.display.set_caption("Line Hawk")
 
         # Initialize the Final:
