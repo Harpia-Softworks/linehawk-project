@@ -18,7 +18,7 @@
                 "type": "frame",
                 "properties":
                 {
-                    "size": [0.25, 0, 1, 0],
+                    "size": [0.15, 0, 1, 0],
                     "position": [0, 0, 0, 0],
                     "pivot": [0, 0],
                     "use_style": "container.LeftBar"
@@ -69,7 +69,7 @@
                         "properties":
                         {
                             "size": [1, 0, 0.05, 0],
-                            "position": [0, 0, 0.80, 0],
+                            "position": [0, 0, 0.825, 0],
                             "pivot": [0, 0],
                             "use_style": "container.LeftBar.CounterText"
                         },
@@ -81,7 +81,7 @@
                         "properties":
                         {
                             "size": [1, 0, 0.05, 0],
-                            "position": [0, 0, 0.85, 0],
+                            "position": [0, 0, 0.875, 0],
                             "pivot": [0, 0],
                             "use_style": "container.LeftBar.ApproxView"
                         },
@@ -92,8 +92,8 @@
                         "type": "frame",
                         "properties":
                         {
-                            "size": [1, 0, 0.10, 0],
-                            "position": [0, 0, 0.90, 0],
+                            "size": [1, 0, 0.075, 0],
+                            "position": [0, 0, 0.925, 0],
                             "pivot": [0, 0],
                             "use_style": "container.LeftBar.ActionBox"
                         },
@@ -133,7 +133,7 @@
                 "type": "frame",
                 "properties":
                 {
-                    "size": [0.50, 0, 0.050, 0],
+                    "size": [0.50, 0, 0.025, 0],
                     "position": [1, 0, 1, 0],
                     "pivot": [1, 1],
                     "use_style": "container.CreatorsInformation"
